@@ -1,0 +1,133 @@
+---
+title: "A8_SeriesDeTiempoNoEstacionariasTendencia"
+author: "Josue Cano"
+date: "2022-12-03"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Gráfico de dispersión
+```{r}
+t <- c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
+ventas = c(4.8, 4.1, 6, 6.5, 5.8, 5.2, 6.8, 7.4, 6, 5.6, 7.5, 7.8, 6.3, 5.9, 8, 8.4)
+plot(t, ventas, type = "o", col = "red", main = "Dispersión de ventas")
+# Se observa que cada año las ventas disminuyen en el segundo trimestre, y aumentan en el tercero y cuarto trimestre. Por tanto, se concluye que en la venta de estos televisores hay un comportamiento estacional
+```
+
+# Análisis de tendencia y estacionalidad
+```{r}
+x= ts(ventas, frequency = 4, start(c(2016,1)))
+T = decompose(x, type = "m")
+T
+plot(T, col ="blue")
+# Se puede notar que la tendencia tiene un aumento a lo largo del tiempo, mientras que la estacionalidad denota una variación estacional de las ventas siguiendo una constante aleatoriedad.
+```
+
+
+# Modelo lineal de la tendencia
+```{r}
+# Regresión lineal de la tendencia
+ventas_desestacionalizadas = (T$x)/(T$seasonal)
+x3 = 1:16
+y3 = ventas_desestacionalizadas
+N3 = lm(y3~x3)
+N3
+plot(x3, y3, type = "l", xlab = "Trimestre", ylab = "Ventas")
+abline(N3, col = "red")
+text(6, 7, " ventas = 5.1080 + 0.1474 trimestre")
+```
+
+```{r}
+# Pertinencia del modelo lineal
+summary(N3)
+```
+
+## Significancia de β1
+## Hipótesis
+### H0: 𝛽𝑖 = 0
+### H1: 𝛽𝑖 ≠ 0
+## Regla de decisión
+### Se rechaza 𝐻0 si: * Si el valor p es menor a 𝛼 = 0.05
+## Conclusión
+### El valor de p-value es 4.25e-9, menor a alpha, por lo que la hipótesis nula se rechaza.
+
+## Variabilidad explicada por el modelo
+```{r}
+cat("Coeficiente de Determinacion:", summary(N3)$r.squared, "\n")
+# El coeficiente de determinación dice que la variabilidad explicada por el modelo es de 92.07%.
+```
+
+# Prueba de normalidad y análisis de residuos
+## 1. Hipótesis
+### H0: Los datos representan una población normal 
+### H1: Los datos no representan una población normal
+## 2. Regla de decisión
+### Se rechaza H0 si valor p < α donde α = 0.05
+## 3. Analisis de Resultados
+```{r}
+sha = shapiro.test(N3$residuals)
+cat("p-vaule:", sha$p.value, "\n")
+```
+## 4. Conclusión
+### No se rechaza 𝐻0, los datos provienen de una población normal.
+```{r}
+E=N3$residuals
+Y=N3$fitted.values
+qqnorm(E)
+qqline(E,col="red")
+# La gráfica demuestra un comportamiento normal de los residuos.
+```
+
+# CME y EPAM
+```{r}
+n = 0
+e = NA
+prediction = NA
+for (i in ventas_desestacionalizadas){
+ n = n + 1
+ prediction[n] = 5.1080 + (0.1474 * n)
+ e[n] = (i - prediction[n])
+}
+CME=mean(e^2,na.rm = TRUE)
+EPAM = mean(abs(e) / ventas)
+cat("CME =", CME)
+cat("\nEPAM =", EPAM * 100, "%")
+```
+
+# Valores de las ventas y las predicciones vs el tiempo
+```{r}
+plot(x3, ventas, type="o", col="red")
+lines(x3, prediction * T$seasonal, type="o", col="blue")
+legend(x = "topleft", legend = c("Real", "Prediccion"), fill = c("red", "blue"))
+```
+
+# Conclusión del modelo
+## La variabilidad explicada por el modelo es de 92%, betha es significativo y los residuos presentan normalidad, pudiendo concluir que se trata de un buen modelo, corroborado por la precisión de las predicciones.
+
+# Pronóstico para el siguiente año.
+```{r}
+aux = 0
+n2 = 17:20
+year5 = NA
+for(i in n2){
+ aux = aux + 1
+ year5[aux] = 5.1080 + (0.1474 * i)
+}
+pronostico = data.frame(
+ "Trimestre" = 1:4,
+ "Pronostico" = year5 * T$seasonal[1:4]
+)
+pronostico
+
+```
+
+
+
+
+
+
+

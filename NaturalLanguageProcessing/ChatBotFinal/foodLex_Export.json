@@ -1,0 +1,238 @@
+{
+  "metadata": {
+    "schemaVersion": "1.0",
+    "importType": "LEX",
+    "importFormat": "JSON"
+  },
+  "resource": {
+    "name": "foodLex",
+    "version": "1",
+    "intents": [
+      {
+        "rejectionStatement": {
+          "messages": [
+            {
+              "contentType": "PlainText",
+              "content": "Okay, puede hacer otra orden o no o nada."
+            }
+          ]
+        },
+        "name": "MakeOrder",
+        "version": "14",
+        "fulfillmentActivity": {
+          "codeHook": {
+            "uri": "arn:aws:lambda:us-east-1:281857625468:function:foodFunction",
+            "messageVersion": "1.0"
+          },
+          "type": "CodeHook"
+        },
+        "sampleUtterances": [
+          "Me gustaria hacer un pedido.",
+          "Me gustaria pedir un {Bebidas}"
+        ],
+        "slots": [
+          {
+            "sampleUtterances": [],
+            "slotType": "Alambres",
+            "slotTypeVersion": "1",
+            "obfuscationSetting": "NONE",
+            "slotConstraint": "Required",
+            "valueElicitationPrompt": {
+              "messages": [
+                {
+                  "contentType": "PlainText",
+                  "content": "Que alambre le gustaria ordenar?"
+                }
+              ],
+              "maxAttempts": 2
+            },
+            "priority": 7,
+            "name": "Alambres"
+          },
+          {
+            "sampleUtterances": [],
+            "slotType": "Bebidas",
+            "slotTypeVersion": "1",
+            "obfuscationSetting": "NONE",
+            "slotConstraint": "Required",
+            "valueElicitationPrompt": {
+              "messages": [
+                {
+                  "contentType": "PlainText",
+                  "content": "Que bebida le gustaria ordenar?"
+                }
+              ],
+              "maxAttempts": 2
+            },
+            "priority": 2,
+            "name": "Bebidas"
+          },
+          {
+            "sampleUtterances": [],
+            "slotType": "Postres",
+            "slotTypeVersion": "1",
+            "obfuscationSetting": "NONE",
+            "slotConstraint": "Required",
+            "valueElicitationPrompt": {
+              "messages": [
+                {
+                  "contentType": "PlainText",
+                  "content": "Que postre le gustaria pedir?"
+                }
+              ],
+              "maxAttempts": 2
+            },
+            "priority": 6,
+            "name": "Postres"
+          },
+          {
+            "sampleUtterances": [],
+            "slotType": "Tortas",
+            "slotTypeVersion": "1",
+            "obfuscationSetting": "NONE",
+            "slotConstraint": "Required",
+            "valueElicitationPrompt": {
+              "messages": [
+                {
+                  "contentType": "PlainText",
+                  "content": "Que torta le gustaria pedir?"
+                }
+              ],
+              "maxAttempts": 2
+            },
+            "priority": 4,
+            "name": "Tortas"
+          }
+        ],
+        "confirmationPrompt": {
+          "messages": [
+            {
+              "contentType": "PlainText",
+              "content": "Su orden seria {Bebidas}, {Tortas}, {Postres}, {Alambres}, correcto?"
+            }
+          ],
+          "maxAttempts": 3
+        }
+      }
+    ],
+    "slotTypes": [
+      {
+        "name": "Alambres",
+        "version": "1",
+        "enumerationValues": [
+          {
+            "value": "Pechuga"
+          },
+          {
+            "value": "Costilla"
+          },
+          {
+            "value": "Arrachera"
+          },
+          {
+            "value": "Chuleta"
+          },
+          {
+            "value": "Bistec"
+          },
+          {
+            "value": "Vegetariano"
+          }
+        ],
+        "valueSelectionStrategy": "ORIGINAL_VALUE"
+      },
+      {
+        "name": "Bebidas",
+        "version": "1",
+        "enumerationValues": [
+          {
+            "value": "Refresco"
+          },
+          {
+            "value": "Agua Natural"
+          },
+          {
+            "value": "Agua de Horchata"
+          },
+          {
+            "value": "Agua de Jamaica"
+          }
+        ],
+        "valueSelectionStrategy": "ORIGINAL_VALUE"
+      },
+      {
+        "name": "Postres",
+        "version": "1",
+        "enumerationValues": [
+          {
+            "value": "Arroz con Leche"
+          },
+          {
+            "value": "Fresas Con Crema"
+          },
+          {
+            "value": "Flan"
+          },
+          {
+            "value": "Gelatina"
+          },
+          {
+            "value": "Pastel Chocolate"
+          }
+        ],
+        "valueSelectionStrategy": "ORIGINAL_VALUE"
+      },
+      {
+        "name": "Tortas",
+        "version": "1",
+        "enumerationValues": [
+          {
+            "value": "Pastor"
+          },
+          {
+            "value": "Pechuga"
+          },
+          {
+            "value": "Longaniza"
+          },
+          {
+            "value": "Chuleta"
+          },
+          {
+            "value": "Maciza"
+          },
+          {
+            "value": "Bistec"
+          },
+          {
+            "value": "Suadero"
+          }
+        ],
+        "valueSelectionStrategy": "ORIGINAL_VALUE"
+      }
+    ],
+    "voiceId": "Lucia",
+    "childDirected": false,
+    "locale": "es-ES",
+    "idleSessionTTLInSeconds": 60,
+    "clarificationPrompt": {
+      "messages": [
+        {
+          "contentType": "PlainText",
+          "content": "Sorry, can you please repeat that?"
+        }
+      ],
+      "maxAttempts": 5
+    },
+    "abortStatement": {
+      "messages": [
+        {
+          "contentType": "PlainText",
+          "content": "Sorry, I could not understand. Goodbye."
+        }
+      ]
+    },
+    "detectSentiment": false,
+    "enableModelImprovements": true
+  }
+}
