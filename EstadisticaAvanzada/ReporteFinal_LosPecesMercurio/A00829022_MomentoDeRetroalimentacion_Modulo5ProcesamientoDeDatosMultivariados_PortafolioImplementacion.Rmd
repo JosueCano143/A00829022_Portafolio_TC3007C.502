@@ -1,0 +1,138 @@
+---
+title: "A00829022_MomentoDeRetroalimentacion_Modulo5ProcesamientoDeDatosMultivariados_PortafolioImplementacion"
+author: "Josue Salvador Cano Martinez"
+date: "2022-11-04"
+output:
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Cargar datos, eliminar tanto columna de id como datos no cuantitativos
+```{r}
+D=read.csv("mercurio.csv")
+D$X1 <- NULL
+D$X2 <- NULL
+head(D)
+
+```
+
+# Mardia’s Test
+## $H_0$ Las variables siguen una distribución normal multivariable
+## $H_1$ Las variables no siguen una distribución normal multivariable
+```{r}
+library(QuantPsyc)
+mult.norm(D)$mult.test
+
+# Debido a que los dos p-values (tanto skewness como kurtosis) son menores a 0.05, se niega la hipótesis $H_0$, no se tiene evidencia para decir que las variables del set de datos siguen una distribución multivariable. 
+```
+
+# Anderson-Darling Test
+## $H_0$ Los datos siguen una distribución normal
+## $H_1$ Los datos no siguen una distribución normal
+```{r}
+library(nortest)
+ad.test(D$X3)
+ad.test(D$X4)
+ad.test(D$X5)
+ad.test(D$X6)
+ad.test(D$X7)
+ad.test(D$X8)
+ad.test(D$X9)
+ad.test(D$X10)
+ad.test(D$X11)
+ad.test(D$X12)
+
+# Tomando como consideración un valor de significancia p-value de 0.05, las variables que niegan la hipótesis $H_0$ y que por tanto no tienden a tener una distribución normal son: X3, X5, X6, X7, X8, X9, X11, X12
+```
+
+# Mardia’s Test a variables que presentan normalidad 
+## $H_0$ Las variables siguen una distribución normal multivariable
+## $H_1$ Las variables no siguen una distribución normal multivariable
+```{r}
+normD <- data.frame(D$X4, D$X10)
+library(QuantPsyc)
+mult.norm(normD)$mult.test
+
+# Debido a que los valores de p-value tanto del sesgo como de la curtosis son mayores a 0.05, se puede entender un nivel de significacia suficiente para negar la hipótesis $H_1$ y deducir que las variables X4 y X5 siguen una distribución normal multivariable. 
+```
+
+# Gráfica de contorno
+```{r}
+library(MVN)
+result <- mvn(normD, mvnTest = "hz", multivariatePlot = "contour")
+# Las regiones con valores más altos se pueden apreciar a partir de los niveles de contorno, mismos que revelan un pico centrado en aproximadamente 7 para el valor de X4 y en 0.5 para el valor de X10, las puntuaciones en esta región pico son superiores a 0.2
+```
+
+# Datos atípicos o influyentes en la normal multivariada (distancia de Mahalanobis y gráfico QQplot multivariado)
+```{r}
+maha <- mvn(data = normD, mvnTest = "hz", multivariateOutlierMethod = "quan")
+adjustMaha <- mvn(data=normD,mvnTest="hz",multivariateOutlierMethod="adj")
+
+# De las gráficas obtenidas, la distancia de Mahalanobis declara 5 observaciones como valor atípico multivariado, mientras que la distancia Mahalanobis ajustada declara 4
+```
+
+# Matriz de correlaciones
+```{r}
+library(corrplot)
+correlacion<-round(cor(D), 1)
+corrplot(correlacion, method="number", type="upper")
+# Es adecuado el uso de componenetes principales para analizar la base debido a que esto permite identificar aquellas variables que tienen un mayor peso en la contaminación por mercurio de peces en el agua dulce comestible. 
+```
+
+# Análisis de componentes principales
+
+```{r}
+library(stats)
+library(factoextra)
+library(ggplot2)
+datos=D
+cpS=princomp(datos,cor=TRUE)
+cpaS=as.matrix(datos)%*%cpS$loadings
+plot(cpaS[,1:2],type="p", main = "Matriz de correlaciones")
+text(cpaS[,1],cpaS[,2],1:nrow(cpaS))
+biplot(cpS)
+# La matriz de correlaciones permite identificar dos componentes que agrupan las variables: la base 1, donde el porcentaje de proporción de varianza explicada es de 77.60% y la base 2 donde el porcentaje es 12.83%%. Este número de componentes principales explica poco más del 90% la exactitud, por lo que resulta ideal recurrir al uso de uno de ellos para reducir la dimensión de la base. 
+```
+
+## Vectores asociados a las variables y las puntuaciones de las observaciones de las dos primeras componentes
+```{r}
+library(FactoMineR)
+library(factoextra)
+library(ggplot2) 
+datos=correlacion
+cp3 = PCA(datos)
+fviz_pca_ind(cp3, col.ind = "blue", addEllipses = TRUE, repel = TRUE)
+fviz_screeplot(cp3)
+fviz_contrib(cp3, choice = c("var"))
+```
+
+# Interpretación de resultados
+## En el primer gráfico se puede notar el porcentaje de proporción de varianza explicada que tiene cada uno de los dos primeros componentes; se puede notar que para el primero es de 77.60% y para el segundo 12.83%. También, permite definir las variables que tienen una mayor influencia en cada una de ellas. 
+## El segundo y tercer gráfico permite enteder el mismo resultado descrito en el punto anterior, con una visualización distinta (agrupada por cuadrantes)
+## El penúltimo gráfico permite visualizar la proporción de varianza explicada en cada componente, donde se puede demostrar que el primero es el que mayormente explica los datos. 
+## El último gráfico permite visualizar el porcentaje de contribución (peso) de cada variable en el primero componente. 
+
+
+# Conclusión general
+## ¿Cuáles son los principales factores que influyen en el nivel de contaminación por mercurio en los peces de los lagos de Florida? La concentración media de mercurio (parte por millón) en el tejido muscualar del grupo de peces estudiados en cada lago, el máximo de la concentración de mercurio en cada grupo de peces y estimación (mediante regresión) de la concentración de mercurio en el pez de 3 años.
+## ¿En qué puede facilitar el estudio la normalidad encontrada en un grupo de variables detectadas? La normalidad encontrada ayuda a que se efectúen con mayor precisión los análisis estadísticos de componentes principales. La distribución normal sirve para conocer la probabilidad de encontrar un valor de la variable que sea igual o inferior a un cierto valor, conociendo la media, la desviación estándar, y la varianza de un conjunto de datos en sustituyéndolos en la función que describe el modelo. Los componentes principales se basan en la proporción de varianza explicada, misma que, como se mencionó antes, es positivamente impactada cuando se cuentan con datos normalizados. 
+## ¿Cómo ayudan los componentes principales a abordar este problema? Permiten determinar aquellas variables que explican de mejor manera, para este caso en específico, la contaminación por mercurio de peces en el agua dulce comestible. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
